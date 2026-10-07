@@ -1,0 +1,126 @@
+{
+  "name": "treespace",
+  "displayName": "TreeSpace",
+  "description": "Discover and open multi-repository Git worktree sets in VS Code.",
+  "version": "0.1.0",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ogiorno/treespace.git"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "git",
+    "worktree",
+    "workspace",
+    "multi-root"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onView:treespace.sets"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "treespace.refresh",
+        "title": "Refresh",
+        "category": "TreeSpace"
+      },
+      {
+        "command": "treespace.openSet",
+        "title": "Open Set",
+        "category": "TreeSpace"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "treespace",
+          "title": "TreeSpace",
+          "icon": "media/treespace.svg"
+        }
+      ]
+    },
+    "views": {
+      "treespace": [
+        {
+          "id": "treespace.sets",
+          "name": "Worktree Sets"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "treespace.refresh",
+          "when": "view == treespace.sets",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "treespace.openSet",
+          "when": "view == treespace.sets && viewItem == treespace.set",
+          "group": "inline"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "TreeSpace",
+      "properties": {
+        "treespace.configPath": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute or workspace-relative path to treespace.json. Empty searches workspace roots."
+        },
+        "treespace.openIn": {
+          "type": "string",
+          "enum": [
+            "newWindow",
+            "currentWindow"
+          ],
+          "default": "newWindow",
+          "description": "Where to open a worktree set workspace."
+        },
+        "treespace.set": {
+          "type": "string",
+          "default": "",
+          "description": "Set associated with the current generated workspace."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "check": "npm run typecheck && npm run lint && npm test && npm run build",
+    "package:vsix": "npm run check && vsce package --no-dependencies",
+    "vscode:prepublish": "npm run build"
+  },
+  "dependencies": {
+    "jsonc-parser": "^3.3.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "22.20.5",
+    "@types/vscode": "1.85.0",
+    "@vscode/vsce": "^4.0.0",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.12.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.1",
+    "vitest": "^5.0.3"
+  }
+}

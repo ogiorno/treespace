@@ -1,0 +1,15 @@
+.github/**
+.gitignore
+.vscode/**
+src/**
+test/**
+node_modules/**
+coverage/**
+*.vsix
+**/*.map
+esbuild.mjs
+eslint.config.mjs
+tsconfig.json
+package-lock.json
+treespace.example.json
+SPEC.md

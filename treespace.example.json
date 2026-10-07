@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "repos": [
+    { "id": "backend", "path": "~/projects/backend", "defaultBase": "origin/main" },
+    { "id": "frontend", "path": "~/projects/frontend", "defaultBase": "origin/main" }
+  ],
+  "worktreesRoot": "~/projects/.worktrees",
+  "workspacesRoot": "~/projects/.workspaces",
+  "protectedBranches": ["main", "master", "develop"],
+  "branchPrefix": "feat/"
+}
