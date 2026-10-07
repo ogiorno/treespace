@@ -6,6 +6,7 @@ const context = await esbuild.context({
   bundle: true,
   platform: 'node',
   format: 'cjs',
+  mainFields: ['module', 'main'],
   target: 'node18',
   outfile: 'dist/extension.js',
   external: ['vscode'],

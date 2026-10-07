@@ -2,7 +2,7 @@
   "name": "treespace",
   "displayName": "TreeSpace",
   "description": "Discover and open multi-repository Git worktree sets in VS Code.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "repository": {
     "type": "git",
@@ -25,7 +25,9 @@
   ],
   "main": "./dist/extension.js",
   "activationEvents": [
-    "onView:treespace.sets"
+    "onView:treespace.sets",
+    "onCommand:treespace.refresh",
+    "onCommand:treespace.openSet"
   ],
   "contributes": {
     "commands": [
@@ -110,8 +112,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
-    "check": "npm run typecheck && npm run lint && npm test && npm run build",
-    "package:vsix": "npm run check && vsce package --no-dependencies",
+    "smoke:extension": "node scripts/smoke-extension.mjs",
+    "check": "npm run typecheck && npm run lint && npm test && npm run build && npm run smoke:extension",
+    "package:vsix": "npm run check && vsce package --no-dependencies && node scripts/smoke-vsix.mjs",
     "vscode:prepublish": "npm run build"
   },
   "dependencies": {
