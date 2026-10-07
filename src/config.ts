@@ -14,7 +14,7 @@ const repoSchema = z.object({
 const configSchema = z.object({
   version: z.literal(1),
   repos: z.array(repoSchema).min(1),
-  worktreesRoot: z.string().min(1),
+  worktreesRoot: z.string().min(1).optional(),
   workspacesRoot: z.string().min(1),
   protectedBranches: z.array(z.string()).default(['main', 'master', 'develop']),
   branchPrefix: z.string().default('feat/')
@@ -66,7 +66,7 @@ export async function loadConfig(filePath: string): Promise<TreeSpaceConfig> {
     ...config,
     sourcePath: filePath,
     repos: config.repos.map((repo) => ({ ...repo, path: resolveConfigPath(repo.path, directory) })),
-    worktreesRoot: resolveConfigPath(config.worktreesRoot, directory),
+    worktreesRoot: config.worktreesRoot ? resolveConfigPath(config.worktreesRoot, directory) : undefined,
     workspacesRoot: resolveConfigPath(config.workspacesRoot, directory)
   };
 }

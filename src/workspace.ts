@@ -26,13 +26,18 @@ export async function writeSetWorkspace(config: TreeSpaceConfig, set: WorktreeSe
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
   }
 
+  const settings = { ...previous.settings };
+  delete settings['treespace.configPath'];
+  delete settings['treespace.repositoryPaths'];
   const workspace: WorkspaceFile = {
     ...previous,
     folders: set.entries.map((entry) => ({ name: `${entry.repoId} · ${set.name}`, path: entry.path })),
     settings: {
-      ...previous.settings,
+      ...settings,
       'treespace.set': set.name,
-      ...(config.sourcePath ? { 'treespace.configPath': config.sourcePath } : {})
+      ...(config.sourcePath
+        ? { 'treespace.configPath': config.sourcePath }
+        : { 'treespace.repositoryPaths': config.repos.map((repo) => repo.path) })
     }
   };
   await mkdir(config.workspacesRoot, { recursive: true });

@@ -29,4 +29,11 @@ describe('parseWorktreeList', () => {
     expect(parseWorktreeList('worktree /gone\nHEAD abc\nprunable gitdir file points to non-existent location\n'))
       .toEqual([{ path: '/gone', head: 'abc', detached: false, prunable: true }]);
   });
+
+  it('parses NUL-delimited output with a newline in the path', () => {
+    const output = 'worktree /tmp/name\nwith newline\0HEAD abc\0branch refs/heads/feat/task\0\0';
+    expect(parseWorktreeList(output)).toEqual([{
+      path: '/tmp/name\nwith newline', head: 'abc', branch: 'feat/task', detached: false, prunable: false
+    }]);
+  });
 });

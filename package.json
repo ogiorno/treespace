@@ -2,7 +2,7 @@
   "name": "treespace",
   "displayName": "TreeSpace",
   "description": "Discover and open multi-repository Git worktree sets in VS Code.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "repository": {
     "type": "git",
@@ -94,6 +94,12 @@
           "type": "string",
           "default": "",
           "description": "Set associated with the current generated workspace."
+        },
+        "treespace.repositoryPaths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Repository paths retained in generated workspaces for Git worktree discovery."
         }
       }
     }

@@ -57,8 +57,8 @@ Não existe extensão que una isso (levantamento informal, sem busca exaustiva n
 - **Base**: branch de onde o worktree nasceu (ex.: `origin/develop`). É o alvo esperado do MR.
 - **Branch de trabalho**: branch local criada para o worktree (ex.: `feat/perk-derived-visibility`).
 
-### 3.2 Arquivo de configuração (fonte de verdade)
-Arquivo `treespace.json` na **pasta raiz dos repos** (ex.: `~/projects/treespace.json`), ou configurável via setting `treespace.configPath`. Permite versionar/compartilhar entre pessoas.
+### 3.2 Arquivo de configuração (opcional)
+Sem configuração, a extensão localiza repositórios pelas pastas do workspace e pelos arquivos `.code-workspace` na pasta aberta; consulta o Git para descobrir seus worktrees. Um `treespace.json` na pasta do workspace (ou `treespace.configPath`) permite escolher repos, bases e destinos explicitamente.
 
 ```jsonc
 {
@@ -69,7 +69,7 @@ Arquivo `treespace.json` na **pasta raiz dos repos** (ex.: `~/projects/treespace
     { "id": "api-gateway", "path": "~/projects/api-gateway",  "defaultBase": "origin/develop" },
     { "id": "react-apps",  "path": "~/projects/react-apps",          "defaultBase": "origin/develop" }
   ],
-  "worktreesRoot": "~/projects/.worktrees",        // onde criar: <root>/<set>/<repo>
+  "worktreesRoot": "~/projects/.worktrees",        // opcional; destino para novos worktrees, não filtro de descoberta
   "workspacesRoot": "~/projects/.workspaces",      // onde gerar <set>.code-workspace
   "protectedBranches": ["develop", "master", "main", "release/*"],
   "branchPrefix": "feat/",
@@ -78,7 +78,7 @@ Arquivo `treespace.json` na **pasta raiz dos repos** (ex.: `~/projects/treespace
 ```
 
 ### 3.3 Estado persistido dos sets
-Arquivo `~/.treespace/state.json` (ou `globalStorage` da extensão). **Mas o estado deve ser re-derivável** de `git worktree list` + convenção de nomes, para não quebrar se o arquivo se perder.
+Arquivo `~/.treespace/state.json` (ou `globalStorage` da extensão). **Mas o estado deve ser re-derivável** de `git worktree list --porcelain -z` + branch em checkout, para não quebrar se o arquivo se perder.
 
 ```jsonc
 {
@@ -97,7 +97,7 @@ Arquivo `~/.treespace/state.json` (ou `globalStorage` da extensão). **Mas o est
 ```
 
 ### 3.4 Importar sets existentes (descoberta)
-Comando **"Import existing worktrees"**: varre `git worktree list --porcelain` de cada repo configurado e agrupa por **sufixo do nome do diretório / nome da branch** (ex.: `monolith · perk-derived-visibility` + `react-apps · perk-derived-visibility` → set `perk-derived-visibility`). O usuário confirma/edita o agrupamento. Isso é essencial: ele **já tem** worktrees abertos.
+A descoberta varre `git worktree list --porcelain -z` dos repos identificados e agrupa worktrees pela **branch completa em checkout**, independentemente do caminho. Por exemplo, `feat/perk-derived-visibility` em `monolith` e `react-apps` forma o set `perk-derived-visibility`, mesmo se os diretórios estiverem em lugares diferentes. Worktrees em detached HEAD aparecem como sets individuais. O comando **"Import existing worktrees"** poderá confirmar/editar agrupamentos ambíguos.
 
 ---
 
@@ -338,7 +338,7 @@ git config --get remote.origin.url
 ## 10. Roadmap / fases
 
 ### Fase 1 — MVP (valor imediato)
-- Leitura do `treespace.json`, **Import Existing Worktrees**.
+- Descoberta automática dos repos do workspace; `treespace.json` opcional; **Import Existing Worktrees** para ajustes manuais.
 - TreeView com sets, repos, branch, base, upstream, ⚠ protegido.
 - **Open Set** gerando `.code-workspace` e abrindo em nova janela.
 - **Auto-import do workspace** ao abrir worktree solto (RF3).
@@ -366,7 +366,7 @@ git config --get remote.origin.url
 2. `Open Set "teste-x"` abre uma janela cujo Explorer mostra exatamente as 4 pastas `repo · teste-x`, e **nenhuma** pasta de outro set.
 3. Abrir diretamente `.../teste-x/monolith` como pasta isolada exibe o prompt "Importar workspace completo do set teste-x?"; ao aceitar, a janela passa a ser o workspace do set.
 4. Um repo cuja branch tem upstream `origin/develop` aparece com ⚠ e tooltip explicando; **Fix upstream** remove o upstream e **Publish** cria `origin/feat/teste-x`.
-5. `Import Existing Worktrees` agrupa `monolith · perk-derived-visibility` e `react-apps · perk-derived-visibility` em um único set.
+5. Dois worktrees em diretórios arbitrários, com branch `feat/perk-derived-visibility` em `monolith` e `react-apps`, aparecem em um único set; diretórios sem worktree registrado no Git não aparecem.
 6. Falha forçada no 3º repo durante `New Set` deixa o disco **limpo** (rollback), sem worktrees órfãos nem branches criadas.
 7. Remove Set com alterações não commitadas **bloqueia** e lista os arquivos/repos afetados.
 8. Tudo funciona em VS Code conectado ao **WSL Ubuntu 24.04**, com paths contendo espaços.

@@ -4,14 +4,14 @@ TreeSpace is a VS Code extension for opening groups of Git worktrees from multip
 
 ## Current functionality
 
-- Reads and validates `treespace.json` in a workspace root or from `treespace.configPath`.
-- Discovers worktrees at `<worktreesRoot>/<set>/<repoId>` using `git worktree list --porcelain`.
+- Finds Git repositories in the open workspace and in `.code-workspace` files beside an open project folder. A `treespace.json` can still define repositories explicitly.
+- Discovers linked worktrees from `git worktree list --porcelain -z`, wherever they are located, and groups matching branch names into sets.
 - Shows sets and their repository branches in the TreeSpace Activity Bar view.
 - Creates or updates `<workspacesRoot>/<set>.code-workspace` and opens it from the view or `TreeSpace: Open Set` command.
-- Keeps the config file path in generated workspaces so the TreeSpace view works after opening a set.
+- Keeps the repository paths or config file path in generated workspaces so the TreeSpace view works after opening a set.
 - Preserves unrelated keys in an existing generated workspace file.
 
-Creation, import of worktrees outside this directory convention, automatic workspace import, branch safety actions, and cleanup are planned in `SPEC.md` and are not implemented yet.
+Creation, automatic workspace import when opening a single worktree, branch safety actions, and cleanup are planned in `SPEC.md` and are not implemented yet.
 
 ## Development
 
@@ -24,9 +24,11 @@ npm run check
 
 Press **F5** in VS Code to open an Extension Development Host. `npm run watch` rebuilds the extension during development. Use `npm run package:vsix` to validate and produce a local `.vsix`. Before publishing to a marketplace, choose a license and a publisher ID, and review the package metadata.
 
-## Configuration
+## Use in another project
 
-Copy [treespace.example.json](treespace.example.json) to `treespace.json` in a workspace root and replace the example paths. Paths may be absolute, relative to the config file, or start with `~/`. JSON with comments and trailing commas is accepted.
+Open a multi-root `.code-workspace` that lists the main repository checkouts, or open a project folder containing such a file. TreeSpace uses those folders to find the repositories, then asks Git for their linked worktrees. The worktree directories may be beside the project, inside it, or elsewhere. Two repositories with the same worktree branch, such as `feat/task-a`, appear in one set named `task-a`.
+
+An explicit config is useful when the workspace does not list all repositories or when you want to choose each repository's expected base branch. Copy [treespace.example.json](treespace.example.json) to `treespace.json` in a workspace root and replace the example paths. Paths may be absolute, relative to the config file, or start with `~/`. JSON with comments and trailing commas is accepted.
 
 ```json
 {
@@ -34,12 +36,11 @@ Copy [treespace.example.json](treespace.example.json) to `treespace.json` in a w
   "repos": [
     { "id": "backend", "path": "~/projects/backend", "defaultBase": "origin/main" }
   ],
-  "worktreesRoot": "~/projects/.worktrees",
   "workspacesRoot": "~/projects/.workspaces"
 }
 ```
 
-For this initial version, a set called `task-a` is discovered when Git lists a worktree at `<worktreesRoot>/task-a/backend`. Set names and repo IDs use letters, numbers, `_`, and `-`.
+`worktreesRoot` is optional and reserved for the planned worktree creation command; it does not filter discovery. Without a config file, TreeSpace infers the base from the main checkout branch (`origin/<branch>` when `origin` exists) and stores generated workspaces in the extension's VS Code storage.
 
 ## Project checks
 

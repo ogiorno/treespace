@@ -14,7 +14,8 @@ export interface GitWorktree {
 export function parseWorktreeList(output: string): GitWorktree[] {
   const worktrees: GitWorktree[] = [];
   let current: GitWorktree | undefined;
-  for (const line of `${output.trimEnd()}\n\n`.split('\n')) {
+  const separator = output.includes('\0') ? '\0' : '\n';
+  for (const line of output.split(separator)) {
     if (line === '') {
       if (current) worktrees.push(current);
       current = undefined;
@@ -32,6 +33,7 @@ export function parseWorktreeList(output: string): GitWorktree[] {
       if (key === 'prunable') current.prunable = true;
     }
   }
+  if (current) worktrees.push(current);
   return worktrees;
 }
 

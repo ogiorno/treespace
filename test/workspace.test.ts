@@ -41,4 +41,23 @@ describe('writeSetWorkspace', () => {
       extensions: { recommendations: ['x.y'] }
     });
   });
+
+  it('retains repository roots in a generated workspace when using automatic discovery', async () => {
+    const root = await mkdtemp(path.join(tmpdir(), 'treespace-'));
+    created.push(root);
+    const repoPath = path.join(root, 'backend');
+    const config: TreeSpaceConfig = {
+      version: 1,
+      repos: [{ id: 'backend', path: repoPath, defaultBase: 'main' }],
+      workspacesRoot: root,
+      protectedBranches: ['main'],
+      branchPrefix: 'feat/'
+    };
+    const file = await writeSetWorkspace(config, {
+      name: 'task-a',
+      entries: [{ repoId: 'backend', path: path.join(root, 'elsewhere'), branch: 'feat/task-a', base: 'main' }]
+    });
+    const workspace = JSON.parse(await readFile(file, 'utf8')) as { settings: Record<string, unknown> };
+    expect(workspace.settings['treespace.repositoryPaths']).toEqual([repoPath]);
+  });
 });

@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { discoverRepositoryPaths, inferConfigFromGit } from './autoConfig.js';
 import { findConfigFile, loadConfig, type TreeSpaceConfig } from './config.js';
 import { GitRunner } from './git.js';
 import { discoverSets, type WorktreeSet } from './sets.js';
@@ -54,20 +55,28 @@ export function activate(context: vscode.ExtensionContext): void {
   const git = new GitRunner(output);
   let currentConfig: TreeSpaceConfig | undefined;
 
+  async function loadCurrentConfig(): Promise<TreeSpaceConfig | undefined> {
+    const filePath = await findConfigFile();
+    if (filePath) return loadConfig(filePath);
+    const folders = (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
+    const saved = vscode.workspace.getConfiguration('treespace').get<string[]>('repositoryPaths', []);
+    const candidates = await discoverRepositoryPaths(folders, saved);
+    return inferConfigFromGit(candidates, git, context.globalStorageUri.fsPath);
+  }
+
   async function refresh(): Promise<void> {
     try {
-      const filePath = await findConfigFile();
-      if (!filePath) {
+      const config = await loadCurrentConfig();
+      if (!config) {
         currentConfig = undefined;
         provider.setSets([]);
-        view.message = 'Add treespace.json to a workspace root or set TreeSpace: Config Path.';
+        view.message = 'Open a Git workspace or configure TreeSpace: Config Path.';
         return;
       }
-      const config = await loadConfig(filePath);
       const sets = await discoverSets(config, git);
       currentConfig = config;
       provider.setSets(sets);
-      view.message = sets.length ? undefined : 'No sets found under worktreesRoot.';
+      view.message = sets.length ? undefined : 'No linked Git worktrees found.';
     } catch (error) {
       currentConfig = undefined;
       provider.setSets([]);
